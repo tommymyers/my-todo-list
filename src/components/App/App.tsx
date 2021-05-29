@@ -4,7 +4,7 @@ import Task from "../../dataModels/Task";
 import TaskItem from "../TaskItem/TaskItem";
 import SortBy from "../SortBy/SortBy";
 import Header from "../Header/Header";
-import taskService from "../../services/tasks";
+import taskService from "../../services/Tasks";
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -13,7 +13,7 @@ const App: React.FC = () => {
   const hook = () => {
     taskService
       .getAll()
-      .then((response) => setTasks(response.data))
+      .then((initialTasks) => setTasks(initialTasks))
       .catch((error) => console.log(error));
   };
   useEffect(hook, []);
@@ -25,23 +25,23 @@ const App: React.FC = () => {
   if (newestFirst) sortedTasks.reverse();
 
   const addTask = (task: Task) => {
-    taskService.create(task).then((response) => {
-      console.log(response);
-      setTasks(tasks.concat(response.data));
+    taskService.create(task).then((newTask) => {
+      console.log(newTask);
+      setTasks(tasks.concat(newTask));
     });
   };
 
   const toggleTaskCompletion = (task: Task) => {
     const changedTask = { ...task, complete: !task.complete };
-    taskService.update(task.id, changedTask).then((response) => {
-      console.log("changed task", response);
-      setTasks(tasks.map((t) => (t.id === task.id ? response.data : t)));
+    taskService.update(task.id!, changedTask).then((updatedTask) => {
+      console.log("updated task", updatedTask);
+      setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)));
     });
   };
 
   const deleteTask = (task: Task) => {
     taskService
-      .remove(task.id)
+      .remove(task.id!)
       .then((response) => console.log(response))
       .catch((error) => console.log(error));
     setTasks(tasks.filter((t) => t.id !== task.id));
