@@ -5,6 +5,7 @@ import Task from "../../dataModels/Task";
 import TaskItem from "../TaskItem/TaskItem";
 import SortBy from "../SortBy/SortBy";
 import Header from "../Header/Header";
+import taskService from "../../services/tasks";
 
 interface AppProps {
   baseDbUrl: string;
@@ -14,10 +15,9 @@ const App: React.FC<AppProps> = ({ baseDbUrl }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newestFirst, setNewestFirst] = useState(true);
 
-  const axios = Axios.default.create({ baseURL: baseDbUrl });
   const hook = () => {
-    axios
-      .get("/tasks")
+    taskService
+      .getAll()
       .then((response) => setTasks(response.data))
       .catch((error) => console.log(error));
   };
@@ -30,7 +30,7 @@ const App: React.FC<AppProps> = ({ baseDbUrl }) => {
   if (newestFirst) sortedTasks.reverse();
 
   const addTask = (task: Task) => {
-    axios.post("/tasks", task).then((response) => {
+    taskService.create(task).then((response) => {
       console.log(response);
       setTasks(tasks.concat(response.data));
     });
@@ -38,15 +38,15 @@ const App: React.FC<AppProps> = ({ baseDbUrl }) => {
 
   const toggleTaskCompletion = (task: Task) => {
     const changedTask = { ...task, complete: !task.complete };
-    axios.put(`/tasks/${task.id}`, changedTask).then((response) => {
+    taskService.update(task.id, changedTask).then((response) => {
       console.log("changed task", response);
       setTasks(tasks.map((t) => (t.id === task.id ? response.data : t)));
     });
   };
 
   const deleteTask = (task: Task) => {
-    axios
-      .delete(`/tasks/${task.id}`)
+    taskService
+      .remove(task.id)
       .then((response) => console.log(response))
       .catch((error) => console.log(error));
     setTasks(tasks.filter((t) => t.id !== task.id));
