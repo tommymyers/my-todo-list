@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import * as Axios from "axios";
 import "./App.css";
 import Task from "../../dataModels/Task";
 import TaskItem from "../TaskItem/TaskItem";
@@ -7,11 +6,7 @@ import SortBy from "../SortBy/SortBy";
 import Header from "../Header/Header";
 import taskService from "../../services/tasks";
 
-interface AppProps {
-  baseDbUrl: string;
-}
-
-const App: React.FC<AppProps> = ({ baseDbUrl }) => {
+const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newestFirst, setNewestFirst] = useState(true);
 
