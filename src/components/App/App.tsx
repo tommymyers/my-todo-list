@@ -5,10 +5,12 @@ import TaskItem from "../TaskItem/TaskItem";
 import SortBy from "../SortBy/SortBy";
 import Header from "../Header/Header";
 import taskService from "../../services/Tasks";
+import Notification from "../Notification/Notification";
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newestFirst, setNewestFirst] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const hook = () => {
     taskService
@@ -40,7 +42,10 @@ const App: React.FC = () => {
         setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)));
       })
       .catch(() => {
-        alert(`the task ${task.text} was deleted`);
+        setErrorMessage(`The task ${task.text} was deleted from the server`);
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3500);
         setTasks(tasks.filter((t) => t.id !== task.id));
       });
   };
@@ -60,6 +65,7 @@ const App: React.FC = () => {
         newestFirst={newestFirst}
         onChange={(value) => setNewestFirst(value)}
       />
+      <Notification message={errorMessage} />
       {sortedTasks.map((task) => (
         <TaskItem
           key={task.id}
