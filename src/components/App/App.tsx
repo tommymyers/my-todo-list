@@ -5,12 +5,21 @@ import TaskItem from "../TaskItem/TaskItem";
 import SortBy from "../SortBy/SortBy";
 import Header from "../Header/Header";
 import taskService from "../../services/Tasks";
-import Notification from "../Notification/Notification";
+import Notification, { NotificationProps } from "../Notification/Notification";
+import Footer from "../Footer/Footer";
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newestFirst, setNewestFirst] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [currentNotification, setCurrentNotification] =
+    useState<NotificationProps>();
+
+  const displayNotification = (notification: NotificationProps) => {
+    setCurrentNotification(notification);
+    setTimeout(() => {
+      setCurrentNotification({});
+    }, 3000);
+  };
 
   const hook = () => {
     taskService
@@ -30,6 +39,10 @@ const App: React.FC = () => {
     taskService.create(task).then((newTask) => {
       console.log(newTask);
       setTasks(tasks.concat(newTask));
+      displayNotification({
+        type: "success",
+        message: `Created new task ${task.text}`,
+      });
     });
   };
 
@@ -41,11 +54,15 @@ const App: React.FC = () => {
         console.log("updated task", updatedTask);
         setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)));
       })
-      .catch(() => {
-        setErrorMessage(`The task ${task.text} was deleted from the server`);
-        setTimeout(() => {
-          setErrorMessage("");
-        }, 3500);
+      .catch((error) => {
+        if (error.response.status === 404) {
+          displayNotification({
+            type: "error",
+            message: `The task ${task.text} was deleted from the server`,
+          });
+        } else {
+          console.log("error occurred when trying to update task", error.response)
+        }
         setTasks(tasks.filter((t) => t.id !== task.id));
       });
   };
@@ -65,7 +82,10 @@ const App: React.FC = () => {
         newestFirst={newestFirst}
         onChange={(value) => setNewestFirst(value)}
       />
-      <Notification message={errorMessage} />
+      <Notification
+        message={currentNotification?.message}
+        type={currentNotification?.type}
+      />
       {sortedTasks.map((task) => (
         <TaskItem
           key={task.id}
@@ -76,6 +96,7 @@ const App: React.FC = () => {
           onDelete={() => deleteTask(task)}
         />
       ))}
+      <Footer />
     </div>
   );
 };
