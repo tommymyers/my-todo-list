@@ -33,10 +33,16 @@ const App: React.FC = () => {
 
   const toggleTaskCompletion = (task: Task) => {
     const changedTask = { ...task, complete: !task.complete };
-    taskService.update(task.id!, changedTask).then((updatedTask) => {
-      console.log("updated task", updatedTask);
-      setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)));
-    });
+    taskService
+      .update(task.id!, changedTask)
+      .then((updatedTask) => {
+        console.log("updated task", updatedTask);
+        setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)));
+      })
+      .catch(() => {
+        alert(`the task ${task.text} was deleted`);
+        setTasks(tasks.filter((t) => t.id !== task.id));
+      });
   };
 
   const deleteTask = (task: Task) => {
